@@ -27,7 +27,13 @@ const EVENT_EMITTER = new EventEmitter({
  */
 export default class Polly {
   constructor(recordingName, config) {
-    this.recordingName = recordingName;
+    // recordingName may be set at config time for serial runs
+    // or at request time by parallel runs
+    if (typeof recordingName === 'function') {
+      // ignore for now, will use in request
+    } else {
+      this.recordingName = recordingName;
+    }
     this.logger = new Logger(this);
     this.server = new Server();
     this.config = {};

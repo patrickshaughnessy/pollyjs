@@ -43,8 +43,16 @@ export default class PollyRequest extends HTTPBase {
     this.method = request.method.toUpperCase();
     this.body = request.body;
     this.setHeaders(request.headers);
-    this.recordingName = polly.recordingName;
-    this.recordingId = polly.recordingId;
+    // on serial runs, recordingName is set at Polly setup
+    // on parallel runs, expect a recordingName function to set it per request
+    if (typeof polly.recordingName === 'function') {
+      const recordingName = polly.recordingName(request);
+
+      this.overrideRecordingName(recordingName);
+    } else {
+      this.recordingName = polly.recordingName;
+      this.recordingId = polly.recordingId;
+    }
     this.requestArguments = freeze(request.requestArguments);
     this.promise = defer();
     this[POLLY] = polly;
